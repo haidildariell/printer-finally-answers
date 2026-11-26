@@ -1,23 +1,35 @@
 #!/usr/bin/env python3
-"""The Printer Finally Answers.
+"""The Printer Finally Answers - entry for make.fun.
 
-Writes a single line - the office printer's own comeback - to
-/output/entry.txt (or to the path in the ENTRY_OUTPUT_PATH env var,
-used for local testing).
+Writes the printer's reply, exactly one line, to the output file.
 """
 
 import os
 
-LINE = "You stare at my blinking light like it owes you an apology. It blinks. That is the apology."
+PRINTER_REPLY = "I ate your report. It is still in my belly, warm, stapled, and upside down."
+
+MAX_CHARS = 240
+
+OUTPUT_PATH = os.environ.get("ENTRY_OUTPUT_PATH", "/output/entry.txt")
 
 
-def main() -> None:
-    output_path = os.environ.get("ENTRY_OUTPUT_PATH", "/output/entry.txt")
-    parent = os.path.dirname(output_path)
-    if parent:
-        os.makedirs(parent, exist_ok=True)
-    with open(output_path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write(LINE + "\n")
+def validate_line(line):
+    """The entry must be exactly one line of 1-240 characters."""
+    if not 1 <= len(line) <= MAX_CHARS:
+        raise ValueError("entry line must be 1-240 characters")
+    if "\n" in line or "\r" in line:
+        raise ValueError("entry must be a single line")
+    return line
+
+
+def write_entry(path, line):
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(validate_line(line) + "\n")
+
+
+def main():
+    write_entry(OUTPUT_PATH, PRINTER_REPLY)
 
 
 if __name__ == "__main__":
